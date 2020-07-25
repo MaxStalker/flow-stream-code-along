@@ -1,0 +1,33 @@
+body {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+}
+
+button {
+  font-size: 24px;
+  padding: 0.25em 1em;
+  margin-right: 1em;
+  cursor: pointer;
+}
+
+button:last-of-type {
+  margin-right: 0;
+}
+
+p {
+  margin: 0;
+}
+
+.address {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+
+.script-result{
+	font-size: 20px;
+	margin-bottom: 20px;
+}
