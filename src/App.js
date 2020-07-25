@@ -41,14 +41,79 @@ const simpleTransaction = async () => {
 
   fcl.tx(tx).subscribe((txStatus) => {
     if (fcl.tx.isExecuted(txStatus)) {
-      console.log("Transaction Executed");
+      console.log("Transaction was executed");
     }
   });
 };
 
-const deploy = async () => {
-  // we will deploy our code to account
-}
+const deployHelloCadence = async () => {
+  const code = `
+    access(all) contract HelloWorld {
+      access(all) let greeting: String
+
+      init() {
+          self.greeting = "Hello, Cadence!"
+      }
+  
+      access(all) fun hello(): String {
+          return self.greeting
+      }
+    }
+  `;
+  const { authorization } = fcl.currentUser();
+  const tx = await fcl.send([
+    sdk.transaction`
+          transaction(code: String) {
+            prepare(acct: AuthAccount) {
+              acct.setCode(code.decodeHex())
+            }
+          }
+        `,
+    fcl.args([
+      fcl.arg(Buffer.from(code, "utf8").toString("hex"), types.String),
+    ]),
+    fcl.proposer(authorization),
+    fcl.payer(authorization),
+    fcl.authorizations([authorization]),
+    fcl.limit(100),
+  ]);
+
+  console.log({ tx });
+
+  fcl.tx(tx).subscribe((txStatus) => {
+    if (fcl.tx.isExecuted(txStatus)) {
+      console.log("Contract was deployed");
+    }
+  });
+};
+
+const pingAccount = async () => {
+  const { authorization } = fcl.currentUser();
+
+  const tx = await fcl.send([
+    fcl.transaction`
+    import HelloWorld from 0x01cf0e2f2f715450
+
+    transaction {
+    
+      prepare(acct: AuthAccount) {}
+    
+      execute {
+        log(HelloWorld.hello())
+      }
+    }
+  `,
+    fcl.proposer(authorization),
+    fcl.payer(authorization),
+    fcl.authorizations([authorization]),
+  ]);
+
+  fcl.tx(tx).subscribe((txStatus) => {
+    if (fcl.tx.isExecuted(txStatus)) {
+      console.log("Transaction was executed");
+    }
+  });
+};
 
 function App() {
   const [user, setUser] = useState(null);
@@ -96,6 +161,8 @@ function App() {
           <p>Your Address</p>
           <p className="address">{user.addr}</p>
           <button onClick={simpleTransaction}>Submit Tx</button>
+          <button onClick={deployHelloCadence}>Deploy Hello Contract</button>
+          <button onClick={pingAccount}>Ping for Hello</button>
           <button
             onClick={() => {
               fcl.unauthenticate();
