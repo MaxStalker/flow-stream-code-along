@@ -18,6 +18,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "dev:emulator:local": "flow emulator start",
     "dev:emulator": "docker run -p 3570:3569 -p 8080:8080 -e FLOW_VERBOSE=true -e FLOW_PORT=3570 -e FLOW_HTTPPORT=8080 -e FLOW_SERVICEPRIVATEKEY=5e967c6c6370b4b243d107794f6096cc346415142eacb72ed64ccfee4e4ae8f5 gcr.io/dl-flow/emulator",
     "dev:wallet": "set PK=5e967c6c6370b4b243d107794f6096cc346415142eacb72ed64ccfee4e4ae8f5 && fcl-wallet"
   },
