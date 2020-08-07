@@ -49,6 +49,8 @@ const simpleTransaction = async () => {
 const deployHelloCadence = async () => {
   const code = `
     access(all) contract HelloWorld {
+      pub event CustomEvent(x: Int, y: Int)
+
       access(all) let greeting: String
 
       init() {
@@ -56,6 +58,7 @@ const deployHelloCadence = async () => {
       }
   
       access(all) fun hello(): String {
+          emit CustomEvent(x: 4, y: 2)
           return self.greeting
       }
     }
@@ -115,6 +118,40 @@ const pingAccount = async () => {
   });
 };
 
+const getEvents = async (params) => {
+  // Define event type from params
+  const { contractAddress, contractName, eventName } = params;
+  const eventType = `A.${contractAddress}.${contractName}.${eventName}`;
+
+  const { from = 0, to } = params;
+  let toBlock;
+  if (to === undefined) {
+    // Get latest block
+    const blockResponse = await fcl.send(
+      await sdk.build([sdk.getLatestBlock()])
+    );
+    toBlock = blockResponse.latestBlock.height;
+  } else {
+    toBlock = to;
+  }
+
+  const response = await fcl.send(
+    await sdk.build([sdk.getEvents(eventType, from, toBlock)])
+  );
+
+  // Return a list of events
+  return response.events;
+};
+
+const getHelloEvents = async () => {
+  const events = await getEvents({
+    contractName: "HelloWorld",
+    contractAddress: "01cf0e2f2f715450", // note the address is without "0x" prefix
+    eventName: "CustomEvent",
+  });
+  console.log({ events });
+};
+
 function App() {
   const [user, setUser] = useState(null);
 
@@ -163,6 +200,7 @@ function App() {
           <button onClick={simpleTransaction}>Submit Tx</button>
           <button onClick={deployHelloCadence}>Deploy Hello Contract</button>
           <button onClick={pingAccount}>Ping for Hello</button>
+          <button onClick={getHelloEvents}>Get events</button>
           <button
             onClick={() => {
               fcl.unauthenticate();
