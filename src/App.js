@@ -3,6 +3,7 @@ import * as fcl from "@onflow/fcl";
 import * as sdk from "@onflow/sdk";
 import * as types from "@onflow/types";
 import "./styles.css";
+import { eventMapper, fixNames } from "./utils";
 
 fcl
   .config()
@@ -49,7 +50,7 @@ const simpleTransaction = async () => {
 const deployHelloCadence = async () => {
   const code = `
     access(all) contract HelloWorld {
-      pub event CustomEvent(x: Int, y: Int)
+      pub event CustomEvent(a_number: Int, b_message: String)
 
       access(all) let greeting: String
 
@@ -58,7 +59,7 @@ const deployHelloCadence = async () => {
       }
   
       access(all) fun hello(): String {
-          emit CustomEvent(x: 4, y: 2)
+          emit CustomEvent(a_number: 42, b_message: "Test message")
           return self.greeting
       }
     }
@@ -139,8 +140,15 @@ const getEvents = async (params) => {
     await sdk.build([sdk.getEvents(eventType, from, toBlock)])
   );
 
+  const events = await fcl.decode(response);
+  const fixedEvents = events.map((item) => {
+    const { data } = item;
+    item.data = fixNames(data);
+    return item;
+  });
+
   // Return a list of events
-  return response.events;
+  return fixedEvents;
 };
 
 const getHelloEvents = async () => {
